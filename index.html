@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pesquisa de Desligamento 2026 — Lojas MM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  :root {
+    --bg: #F5F3EF;
+    --surface: #FFFFFF;
+    --surface2: #EDEBE6;
+    --border: #D8D5CE;
+    --text: #1A1916;
+    --text-muted: #6B6860;
+    --text-faint: #A09D97;
+    --blue: #1D4ED8;
+    --blue-light: #DBEAFE;
+    --red: #B91C1C;
+    --red-light: #FEE2E2;
+    --amber: #92400E;
+    --amber-light: #FEF3C7;
+    --green: #166534;
+    --green-light: #DCFCE7;
+    --accent: #1D4ED8;
+    --radius: 12px;
+    --radius-sm: 6px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--text);
+    color: #fff;
+    padding: 3rem 2.5rem 2.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0; right: 0;
+    height: 40px;
+    background: var(--bg);
+    clip-path: ellipse(55% 100% at 50% 100%);
+  }
+  .header-eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    color: #9CA3AF;
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+  }
+  .header h1 {
+    font-size: 2rem;
+    font-weight: 600;
+    line-height: 1.2;
+    margin-bottom: 0.5rem;
+  }
+  .header-sub {
+    color: #9CA3AF;
+    font-size: 14px;
+    font-weight: 300;
+  }
+
+  /* LAYOUT */
+  .container {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+  }
+
+  /* SECTION TITLES */
+  .section-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    margin-bottom: 1rem;
+    margin-top: 2.5rem;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* METRIC CARDS */
+  .metric-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+    margin-bottom: 0.5rem;
+  }
+  .metric {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.1rem 1.25rem 1rem;
+  }
+  .metric-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 6px;
+    line-height: 1.3;
+  }
+  .metric-value {
+    font-size: 26px;
+    font-weight: 600;
+    line-height: 1;
+    margin-bottom: 4px;
+    font-variant-numeric: tabular-nums;
+  }
+  .metric-sub {
+    font-size: 11px;
+    color: var(--text-faint);
+  }
+  .metric.ok .metric-value { color: var(--green); }
+  .metric.warn .metric-value { color: var(--amber); }
+  .metric.alert .metric-value { color: var(--red); }
+  .metric.neutral .metric-value { color: var(--text); }
+
+  /* CHART CARDS */
+  .chart-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem 1.5rem 1.25rem;
+    margin-bottom: 1rem;
+  }
+  .chart-card h3 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .chart-subtitle {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+    line-height: 1.5;
+  }
+  .chart-note {
+    font-size: 11.5px;
+    color: var(--text-muted);
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+    line-height: 1.5;
+  }
+
+  /* LEGENDS */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-bottom: 14px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .legend span { display: flex; align-items: center; gap: 6px; }
+  .legend-box {
+    width: 10px; height: 10px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  /* ALERT CARDS */
+  .alert-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 10px;
+  }
+  .alert-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem 1.1rem;
+    border-left: 4px solid;
+  }
+  .alert-item.red { border-left-color: #EF4444; }
+  .alert-item.amber { border-left-color: #F59E0B; }
+  .alert-item.blue { border-left-color: #3B82F6; }
+  .alert-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 5px;
+    line-height: 1.3;
+  }
+  .alert-body {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.55;
+  }
+
+  /* DONUT CENTER */
+  .donut-wrap {
+    position: relative;
+    height: 220px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .donut-center {
+    position: absolute;
+    text-align: center;
+    pointer-events: none;
+  }
+  .donut-center-val {
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1;
+  }
+  .donut-center-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  /* TWO COLUMNS */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  @media (max-width: 620px) {
+    .two-col { grid-template-columns: 1fr; }
+    .metric-grid { grid-template-columns: repeat(2, 1fr); }
+    .header h1 { font-size: 1.5rem; }
+  }
+
+  /* FOOTER */
+  .footer {
+    margin-top: 3rem;
+    text-align: center;
+    font-size: 11px;
+    color: var(--text-faint);
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.05em;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-eyebrow">Recursos Humanos · Lojas MM · Jan – Mai 2026</div>
+  <h1>Pesquisa de Desligamento 2026</h1>
+  <p class="header-sub">Análise quantitativa e qualitativa — motivos, regiões críticas e indicadores de retenção</p>
+</div>
+
+<div class="container">
+
+  <!-- VISÃO GERAL -->
+  <div class="section-label">Visão geral — Jan a Mai 2026</div>
+  <div class="metric-grid">
+    <div class="metric neutral">
+      <div class="metric-label">Total desligamentos 2026</div>
+      <div class="metric-value">789</div>
+      <div class="metric-sub">Jan a Mai/2026</div>
+    </div>
+    <div class="metric ok">
+      <div class="metric-label">Responderam a pesquisa</div>
+      <div class="metric-value">590</div>
+      <div class="metric-sub">respostas coletadas</div>
+    </div>
+    <div class="metric alert">
+      <div class="metric-label">Índice de resposta</div>
+      <div class="metric-value">74,8%</div>
+      <div class="metric-sub">199 não responderam</div>
+    </div>
+    <div class="metric ok">
+      <div class="metric-label">Voltariam à empresa</div>
+      <div class="metric-value">80,3%</div>
+      <div class="metric-sub">474 de 590</div>
+    </div>
+    <div class="metric warn">
+      <div class="metric-label">Iniciativa do colaborador</div>
+      <div class="metric-value">62,9%</div>
+      <div class="metric-sub">371 pedidos de deslig.</div>
+    </div>
+    <div class="metric neutral">
+      <div class="metric-label">Iniciativa da empresa</div>
+      <div class="metric-value">37,1%</div>
+      <div class="metric-sub">219 demissões</div>
+    </div>
+  </div>
+
+  <!-- GRÁFICO 1 -->
+  <div class="section-label">1 · Adesão à pesquisa de desligamento</div>
+  <div class="two-col">
+    <div class="chart-card">
+      <h3>Índice de participação — 2026</h3>
+      <p class="chart-subtitle">Do total de 789 desligados, 590 responderam (74,8%) e 199 não responderam (25,2%)</p>
+      <div class="legend">
+        <span><span class="legend-box" style="background:#1D4ED8"></span>Responderam — 74,8%</span>
+        <span><span class="legend-box" style="background:#D8D5CE"></span>Não responderam — 25,2%</span>
+      </div>
+      <div class="donut-wrap">
+        <div class="donut-center">
+          <div class="donut-center-val">74,8%</div>
+          <div class="donut-center-label">taxa de resposta</div>
+        </div>
+        <canvas id="c1" style="max-height:200px" role="img" aria-label="Gráfico de rosca: 74,8% responderam, 25,2% não responderam">590 de 789 responderam a pesquisa.</canvas>
+      </div>
+      <p class="chart-note">⚠️ 1 em cada 4 desligados não respondeu — reforçar coleta presencial no momento da rescisão.</p>
+    </div>
+    <div class="chart-card">
+      <h3>Iniciativa do desligamento</h3>
+      <p class="chart-subtitle">Distribuição entre saídas voluntárias (colaborador) e demissões (empresa)</p>
+      <div class="legend">
+        <span><span class="legend-box" style="background:#F59E0B"></span>Colaborador — 62,9%</span>
+        <span><span class="legend-box" style="background:#1D4ED8"></span>Empresa — 37,1%</span>
+      </div>
+      <div style="position:relative;height:200px">
+        <canvas id="c_init" role="img" aria-label="Gráfico de rosca: 62,9% iniciativa colaborador, 37,1% iniciativa empresa">371 pedidos de demissão; 219 demissões pela empresa.</canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- GRÁFICO 2 -->
+  <div class="section-label">2 · Motivos de desligamento — todos os respondentes</div>
+  <div class="chart-card">
+    <h3>Ranking completo dos motivos declarados</h3>
+    <p class="chart-subtitle">590 respostas — os motivos que mais originam saídas da empresa (colaborador + empresa)</p>
+    <div class="legend">
+      <span><span class="legend-box" style="background:#B91C1C"></span>Crítico (top 1)</span>
+      <span><span class="legend-box" style="background:#F59E0B"></span>Alto volume (top 2–4)</span>
+      <span><span class="legend-box" style="background:#1D4ED8"></span>Demais motivos</span>
+    </div>
+    <div style="position:relative;" id="c2wrap">
+      <canvas id="c2" role="img" aria-label="Barras horizontais com ranking de motivos de desligamento">Remuneração 111, Transição de carreira 93, Outros 77, Motivações pessoais 75.</canvas>
+    </div>
+  </div>
+
+  <!-- GRÁFICO 3 -->
+  <div class="section-label">3 · Regiões críticas — Ctba 1, Ctba 2 e SC</div>
+  <div class="chart-card">
+    <h3>Motivos de desligamento por região crítica</h3>
+    <p class="chart-subtitle">Comparativo dos motivos declarados nas 3 regiões hoje mais críticas da empresa (148 respondentes no total)</p>
+    <div class="legend">
+      <span><span class="legend-box" style="background:#1D4ED8"></span>Ctba 1 (36 respostas)</span>
+      <span><span class="legend-box" style="background:#EF4444"></span>Ctba 2 (44 respostas)</span>
+      <span><span class="legend-box" style="background:#16A34A"></span>SC (68 respostas)</span>
+    </div>
+    <div style="position:relative;" id="c3wrap">
+      <canvas id="c3" role="img" aria-label="Barras horizontais agrupadas por região: Ctba 1, Ctba 2 e SC">Principais motivos por região crítica.</canvas>
+    </div>
+    <p class="chart-note">SC concentra o maior volume de conflitos com gestão imediata e transições de carreira. Ctba 2 tem destaque em resultados insuficientes — possível sinal de desalinhamento de metas ou liderança.</p>
+  </div>
+
+  <!-- GRÁFICO 4 -->
+  <div class="section-label">4 · Intenção de retorno à empresa</div>
+  <div class="two-col">
+    <div class="chart-card">
+      <h3>Voltaria a trabalhar na MM / recomendaria?</h3>
+      <p class="chart-subtitle">Dos 590 respondentes — percepção da marca empregadora após o desligamento</p>
+      <div class="legend">
+        <span><span class="legend-box" style="background:#16A34A"></span>Voltaria / Recomendaria — 80,3%</span>
+        <span><span class="legend-box" style="background:#EF4444"></span>Não voltaria — 19,7%</span>
+      </div>
+      <div style="position:relative;height:200px">
+        <canvas id="c4" role="img" aria-label="Gráfico de barras: 474 voltariam, 116 não voltariam">474 voltariam; 116 não voltariam.</canvas>
+      </div>
+    </div>
+    <div class="chart-card">
+      <h3>Intenção de retorno — visão proporcional</h3>
+      <p class="chart-subtitle">Representação em rosca da aprovação da empresa pelos ex-colaboradores</p>
+      <div class="donut-wrap">
+        <div class="donut-center">
+          <div class="donut-center-val">80,3%</div>
+          <div class="donut-center-label">retornariam</div>
+        </div>
+        <canvas id="c4b" style="max-height:200px" role="img" aria-label="Rosca: 80,3% voltariam, 19,7% não voltariam">80,3% dos ex-colaboradores voltariam.</canvas>
+      </div>
+      <p class="chart-note">✅ Capital reputacional positivo — mesmo saindo, a maioria mantém boa percepção da empresa.</p>
+    </div>
+  </div>
+
+  <!-- GRÁFICO 5 -->
+  <div class="section-label">5 · Dados adicionais — pontos de alerta</div>
+
+  <div class="chart-card">
+    <h3>Evolução mensal de desligamentos — 2026 vs 2025</h3>
+    <p class="chart-subtitle">Comparativo mês a mês para identificar tendências no volume total de saídas</p>
+    <div class="legend">
+      <span><span class="legend-box" style="background:#D8D5CE"></span>2025 (referência)</span>
+      <span><span class="legend-box" style="background:#1D4ED8"></span>2026 (atual)</span>
+    </div>
+    <div style="position:relative;height:230px">
+      <canvas id="c5" role="img" aria-label="Linhas mensais: 2025 estável entre 96 e 132; 2026 crescendo de 144 a 205 em abril">2025: 122,119,96,132,109. 2026: 144,167,168,205,105.</canvas>
+    </div>
+    <p class="chart-note">⚠️ Até Mai/26 já são 789 desligamentos vs 578 no mesmo período de 2025 — alta de +36,5%. Abril/26 registrou pico histórico de 205 saídas.</p>
+  </div>
+
+  <div class="chart-card">
+    <h3>Volume de respondentes por região</h3>
+    <p class="chart-subtitle">Distribuição geográfica das pesquisas respondidas — regiões críticas destacadas em vermelho</p>
+    <div class="legend">
+      <span><span class="legend-box" style="background:#EF4444"></span>Regiões críticas (Ctba 1, Ctba 2, SC)</span>
+      <span><span class="legend-box" style="background:#1D4ED8"></span>Demais regiões</span>
+    </div>
+    <div style="position:relative;" id="c6wrap">
+      <canvas id="c6" role="img" aria-label="Barras horizontais por região: CDAM 119, CG 69, SC 68, Sudoeste 62, Sul 51">Distribuição por região.</canvas>
+    </div>
+  </div>
+
+  <!-- ALERTAS -->
+  <div class="section-label">Pontos de alerta — análise complementar</div>
+  <div class="alert-grid">
+    <div class="alert-item red">
+      <div class="alert-title">📈 Aceleração de desligamentos em 2026</div>
+      <div class="alert-body">Até mai/26 já são 789 desligamentos — em 2025 o total acumulado até maio era 578. Alta de +36,5% no mesmo período.</div>
+    </div>
+    <div class="alert-item red">
+      <div class="alert-title">💸 Remuneração é o principal gatilho</div>
+      <div class="alert-body">111 saídas (18,8%) por insatisfação salarial. É o motivo nº 1, especialmente entre colaboradores que pediram demissão.</div>
+    </div>
+    <div class="alert-item amber">
+      <div class="alert-title">🚪 Abril com pico histórico</div>
+      <div class="alert-body">205 desligamentos em abril/26 — maior volume mensal registrado, com 112 saídas voluntárias e 93 demissões pela empresa.</div>
+    </div>
+    <div class="alert-item amber">
+      <div class="alert-title">⚡ Conflito com gestão em SC</div>
+      <div class="alert-body">SC concentra o maior volume de conflitos com gestão imediata entre as regiões críticas. Pede atenção ao clima e liderança local.</div>
+    </div>
+    <div class="alert-item amber">
+      <div class="alert-title">🔄 62,9% saem por conta própria</div>
+      <div class="alert-body">A maioria das saídas é voluntária — sinal de que o ambiente ou as condições não estão retendo talentos. Risco de turnover estrutural.</div>
+    </div>
+    <div class="alert-item blue">
+      <div class="alert-title">✅ Marca empregadora ainda forte</div>
+      <div class="alert-body">80,3% voltaria ou recomendaria a empresa — mesmo saindo, a maioria mantém percepção positiva. Capital reputacional a preservar.</div>
+    </div>
+    <div class="alert-item blue">
+      <div class="alert-title">🎓 Transição de carreira relevante</div>
+      <div class="alert-body">93 colaboradores (15,8%) saíram para mudar de área ou empreender. Avaliar se há espaço para crescimento interno antes da saída.</div>
+    </div>
+    <div class="alert-item red">
+      <div class="alert-title">📋 25% sem voz na pesquisa</div>
+      <div class="alert-body">199 desligados não responderam. Esse grupo pode esconder motivos sensíveis ou conflituosos — lacuna importante para investigar.</div>
+    </div>
+  </div>
+
+  <div class="footer">
+    Recursos Humanos · Lojas MM · Gerado em Mai/2026 · Base: 789 desligamentos (Jan–Mai 2026)
+  </div>
+
+</div>
+
+<script>
+const gridColor = 'rgba(0,0,0,0.06)';
+const textColor = '#6B6860';
+
+// C1 — Adesão
+new Chart(document.getElementById('c1'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Responderam','Não responderam'],
+    datasets: [{ data: [590,199], backgroundColor: ['#1D4ED8','#D8D5CE'], borderWidth: 0 }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false, cutout: '70%',
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.raw} (${((ctx.raw/789)*100).toFixed(1)}%)` } } }
+  }
+});
+
+// C_INIT — Iniciativa
+new Chart(document.getElementById('c_init'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Colaborador','Empresa'],
+    datasets: [{ data: [371,219], backgroundColor: ['#F59E0B','#1D4ED8'], borderWidth: 0 }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false, cutout: '65%',
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.raw} (${((ctx.raw/590)*100).toFixed(1)}%)` } } }
+  }
+});
+
+// C2 — Motivos geral
+const motivoLabels = [
+  'Remuneração / políticas de salário',
+  'Transição de carreira',
+  'Outros',
+  'Motivações pessoais',
+  'Resultados insuficientes',
+  'Fim de contrato de experiência',
+  'Conflito c/ gestão imediata',
+  'Jornada de trabalho',
+  'Clima organizacional filial',
+  'Redução de quadro',
+  'Conflito c/ colegas',
+  'Não informado pelo gestor',
+  'Cultura organizacional',
+  'Benefícios'
+];
+const motivoVals = [111,93,77,75,54,47,27,23,19,17,15,13,8,6];
+const motivoColors = motivoVals.map((v,i) => i===0 ? '#B91C1C' : i<=3 ? '#F59E0B' : '#1D4ED8');
+document.getElementById('c2wrap').style.height = (motivoLabels.length * 38 + 60) + 'px';
+new Chart(document.getElementById('c2'), {
+  type: 'bar',
+  data: {
+    labels: motivoLabels,
+    datasets: [{ label: 'Respostas', data: motivoVals, backgroundColor: motivoColors, borderWidth: 0, borderRadius: 3 }]
+  },
+  options: {
+    indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${ctx.raw} respostas (${((ctx.raw/590)*100).toFixed(1)}%)` } } },
+    scales: {
+      x: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 11 } } },
+      y: { grid: { display: false }, ticks: { color: textColor, font: { size: 11 } }, autoSkip: false }
+    }
+  }
+});
+
+// C3 — Regiões críticas
+const critLabels = ['Remuneração','Transição carreira','Outros','Motiv. pessoais','Resultados insuf.','Fim de contrato','Conflito c/ gestão','Clima filial','Cultura org.'];
+const ctba1 = [5,3,5,2,3,2,1,2,0];
+const ctba2 = [5,4,4,3,4,2,2,2,0];
+const sc    = [8,10,14,5,4,5,5,1,1];
+document.getElementById('c3wrap').style.height = (critLabels.length * 50 + 80) + 'px';
+new Chart(document.getElementById('c3'), {
+  type: 'bar',
+  data: {
+    labels: critLabels,
+    datasets: [
+      { label: 'Ctba 1 (36)', data: ctba1, backgroundColor: '#1D4ED8', borderWidth: 0, borderRadius: 2 },
+      { label: 'Ctba 2 (44)', data: ctba2, backgroundColor: '#EF4444', borderWidth: 0, borderRadius: 2 },
+      { label: 'SC (68)',     data: sc,    backgroundColor: '#16A34A', borderWidth: 0, borderRadius: 2 }
+    ]
+  },
+  options: {
+    indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 11 } } },
+      y: { grid: { display: false }, ticks: { color: textColor, font: { size: 11 } }, autoSkip: false }
+    }
+  }
+});
+
+// C4 — Retorno (barras)
+new Chart(document.getElementById('c4'), {
+  type: 'bar',
+  data: {
+    labels: ['Voltaria / Recomendaria','Não voltaria'],
+    datasets: [{ label: 'Colaboradores', data: [474,116], backgroundColor: ['#16A34A','#EF4444'], borderWidth: 0, borderRadius: 4 }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${ctx.raw} pessoas (${((ctx.raw/590)*100).toFixed(1)}%)` } } },
+    scales: {
+      x: { grid: { display: false }, ticks: { color: textColor, font: { size: 12 } } },
+      y: { grid: { color: gridColor }, ticks: { color: textColor } }
+    }
+  }
+});
+
+// C4B — Retorno (donut)
+new Chart(document.getElementById('c4b'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Voltaria','Não voltaria'],
+    datasets: [{ data: [474,116], backgroundColor: ['#16A34A','#EF4444'], borderWidth: 0 }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false, cutout: '70%',
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.raw} (${((ctx.raw/590)*100).toFixed(1)}%)` } } }
+  }
+});
+
+// C5 — Evolução mensal
+new Chart(document.getElementById('c5'), {
+  type: 'line',
+  data: {
+    labels: ['Jan','Fev','Mar','Abr','Mai'],
+    datasets: [
+      { label: '2025', data: [122,119,96,132,109], borderColor: '#B4B2A9', backgroundColor: 'transparent', borderDash: [6,4], tension: 0.35, pointRadius: 4, pointBackgroundColor: '#B4B2A9' },
+      { label: '2026', data: [144,167,168,205,105], borderColor: '#1D4ED8', backgroundColor: 'rgba(29,78,216,0.07)', tension: 0.35, pointRadius: 5, pointBackgroundColor: '#1D4ED8', fill: true }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
+    scales: {
+      x: { grid: { color: gridColor }, ticks: { color: textColor } },
+      y: { grid: { color: gridColor }, ticks: { color: textColor }, min: 60 }
+    }
+  }
+});
+
+// C6 — Por região
+const regiaoLabels = ['CDAM','CG','SC','Sudoeste','Sul','Norte 2','Ctba 2','Norte 1','Ctba 1','MS 2','MS 1'];
+const regiaoVals   = [119,69,68,62,51,50,44,37,36,26,18];
+const regiaoColors = regiaoLabels.map(r => ['Ctba 1','Ctba 2','SC'].includes(r) ? '#EF4444' : '#1D4ED8');
+document.getElementById('c6wrap').style.height = (regiaoLabels.length * 36 + 60) + 'px';
+new Chart(document.getElementById('c6'), {
+  type: 'bar',
+  data: {
+    labels: regiaoLabels,
+    datasets: [{ label: 'Respostas', data: regiaoVals, backgroundColor: regiaoColors, borderWidth: 0, borderRadius: 3 }]
+  },
+  options: {
+    indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 11 } } },
+      y: { grid: { display: false }, ticks: { color: textColor, font: { size: 11 } }, autoSkip: false }
+    }
+  }
+});
+</script>
+</body>
+</html>
