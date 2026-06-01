@@ -466,11 +466,138 @@
     </div>
   </div>
 
+  <!-- SEÇÃO 7: CONCLUSÃO DE TRILHA E TURNOVER POR REGIÃO -->
+  <div class="section-label" style="margin-top:2.5rem">7 · Conclusão de trilha e turnover por região</div>
+
+  <div class="chart-card">
+    <h3>Índice de conclusão de trilha vs. Turnover por região</h3>
+    <p class="chart-subtitle">Regiões ordenadas pelo maior índice de turnover — quanto maior o turnover e menor a conclusão de trilha, maior o risco operacional</p>
+
+    <div style="display:flex;flex-wrap:wrap;gap:14px;margin-bottom:1rem;font-size:12px;color:var(--text-muted)">
+      <span style="display:flex;align-items:center;gap:6px"><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#DCFCE7;border:1px solid #16A34A44"></span>Alta conclusão (≥47%)</span>
+      <span style="display:flex;align-items:center;gap:6px"><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#FEF3C7;border:1px solid #F59E0B44"></span>Atenção (37–43%)</span>
+      <span style="display:flex;align-items:center;gap:6px"><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#FEE2E2;border:1px solid #EF444444"></span>Baixa conclusão (&lt;37%)</span>
+      <span style="display:flex;align-items:center;gap:6px"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#EF4444"></span>Turnover crítico (≥40%)</span>
+    </div>
+
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:13px" id="trilha-table">
+        <thead>
+          <tr style="background:var(--surface2)">
+            <th style="padding:10px 14px;text-align:left;color:var(--text-muted);font-weight:500;border-bottom:2px solid var(--border)">Região</th>
+            <th style="padding:10px 14px;text-align:center;color:var(--text-muted);font-weight:500;border-bottom:2px solid var(--border)">Conclusão de Trilha</th>
+            <th style="padding:10px 14px;text-align:center;color:var(--text-muted);font-weight:500;border-bottom:2px solid var(--border)">Turnover</th>
+            <th style="padding:10px 14px;text-align:center;color:var(--text-muted);font-weight:500;border-bottom:2px solid var(--border)">Situação</th>
+            <th style="padding:10px 14px;text-align:left;color:var(--text-muted);font-weight:500;border-bottom:2px solid var(--border)">Barra de conclusão</th>
+          </tr>
+        </thead>
+        <tbody id="trilha-tbody"></tbody>
+      </table>
+    </div>
+
+    <div style="position:relative;height:320px;margin-top:1.5rem">
+      <canvas id="c_trilha" role="img" aria-label="Gráfico de barras agrupadas: conclusão de trilha e turnover por região ordenado por turnover">Conclusão de trilha e turnover por região.</canvas>
+    </div>
+
+    <p class="chart-note">⚠️ <strong>Ctba 2</strong> concentra o maior risco: turnover de 58,4% (crítico) combinado com apenas 22,7% de conclusão de trilha. <strong>MS-2</strong> e <strong>SC</strong> também merecem atenção com turnover acima de 43%. Regiões com alta conclusão de trilha tendem a ter menor turnover — reforçando a importância do treinamento na retenção.</p>
+  </div>
+
   <div class="footer">
     Recursos Humanos · Lojas MM · Gerado em Mai/2026 · Base: 789 desligamentos (Jan–Mai 2026)
   </div>
 
 </div>
+
+<script id="s7">
+// Dados da tabela — ordenados por MAIOR turnover primeiro
+const trilhaData = [
+  { regiao: 'Ctba 2',   conclusao: 22.7, turnover: 58.4, situacao: 'baixa conclusão' },
+  { regiao: 'MS-2',     conclusao: 42.9, turnover: 43.2, situacao: 'atenção' },
+  { regiao: 'SC',       conclusao: 37.6, turnover: 43.1, situacao: 'atenção' },
+  { regiao: 'CDAM',     conclusao: 11.4, turnover: 42.0, situacao: 'baixa conclusão' },
+  { regiao: 'CG',       conclusao: 28.3, turnover: 31.8, situacao: 'baixa conclusão' },
+  { regiao: 'Sudoeste', conclusao: 68.1, turnover: 33.5, situacao: 'alta conclusão' },
+  { regiao: 'Ctba 1',   conclusao: 51.2, turnover: 34.6, situacao: 'alta conclusão' },
+  { regiao: 'Norte 2',  conclusao: 55.1, turnover: 29.7, situacao: 'alta conclusão' },
+  { regiao: 'Sul',      conclusao: 37.5, turnover: 22.8, situacao: 'atenção' },
+  { regiao: 'Norte 1',  conclusao: 47.4, turnover: 23.4, situacao: 'alta conclusão' },
+  { regiao: 'MS-1',     conclusao: 60.4, turnover: 26.6, situacao: 'alta conclusão' },
+];
+
+const situacaoConfig = {
+  'alta conclusão': { rowBg: '#F0FDF4', rowBgAlt: '#DCFCE7', badge: '#166534', badgeBg: '#DCFCE7', label: 'alta conclusão' },
+  'atenção':        { rowBg: '#FFFBEB', rowBgAlt: '#FEF3C7', badge: '#92400E', badgeBg: '#FEF3C7', label: 'atenção' },
+  'baixa conclusão':{ rowBg: '#FFF1F2', rowBgAlt: '#FEE2E2', badge: '#B91C1C', badgeBg: '#FEE2E2', label: 'baixa conclusão' },
+};
+
+const tbody = document.getElementById('trilha-tbody');
+trilhaData.forEach((d, i) => {
+  const cfg = situacaoConfig[d.situacao];
+  const isAlt = i % 2 !== 0;
+  const bg = isAlt ? cfg.rowBgAlt : cfg.rowBg;
+  const conclusaoColor = d.conclusao >= 47 ? '#166534' : d.conclusao >= 37 ? '#92400E' : '#B91C1C';
+  const turnoverColor  = d.turnover >= 40 ? '#B91C1C' : d.turnover >= 30 ? '#92400E' : '#166534';
+  const barW = Math.round(d.conclusao);
+
+  const tr = document.createElement('tr');
+  tr.style.borderBottom = '1px solid var(--border)';
+  tr.style.background = bg;
+  tr.innerHTML =
+    `<td style="padding:10px 14px;font-weight:500;color:var(--text)">${d.regiao}</td>` +
+    `<td style="padding:10px 14px;text-align:center;font-weight:600;color:${conclusaoColor};font-variant-numeric:tabular-nums">${d.conclusao.toFixed(1)}%</td>` +
+    `<td style="padding:10px 14px;text-align:center;font-weight:600;color:${turnoverColor};font-variant-numeric:tabular-nums">` +
+      (d.turnover >= 40 ? `<span style="display:inline-flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:50%;background:#EF4444;flex-shrink:0"></span>${d.turnover.toFixed(1)}%</span>` : `${d.turnover.toFixed(1)}%`) +
+    `</td>` +
+    `<td style="padding:10px 14px;text-align:center">` +
+      `<span style="display:inline-block;background:${cfg.badgeBg};color:${cfg.badge};border:1px solid ${cfg.badge}44;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600;white-space:nowrap">${cfg.label}</span>` +
+    `</td>` +
+    `<td style="padding:10px 14px;min-width:160px">` +
+      `<div style="display:flex;align-items:center;gap:8px">` +
+        `<div style="flex:1;background:#E5E7EB;border-radius:4px;height:8px;overflow:hidden">` +
+          `<div style="height:100%;width:${barW}%;background:${conclusaoColor};border-radius:4px;transition:width .4s"></div>` +
+        `</div>` +
+        `<span style="font-size:11px;color:var(--text-faint);width:34px;text-align:right">${d.conclusao.toFixed(0)}%</span>` +
+      `</div>` +
+    `</td>`;
+  tbody.appendChild(tr);
+});
+
+// Gráfico barras agrupadas
+const gridC = 'rgba(0,0,0,0.06)';
+const textC = '#6B6860';
+new Chart(document.getElementById('c_trilha'), {
+  type: 'bar',
+  data: {
+    labels: trilhaData.map(d => d.regiao),
+    datasets: [
+      {
+        label: 'Conclusão de Trilha (%)',
+        data: trilhaData.map(d => d.conclusao),
+        backgroundColor: trilhaData.map(d => d.conclusao >= 47 ? '#16A34A' : d.conclusao >= 37 ? '#F59E0B' : '#EF4444'),
+        borderWidth: 0, borderRadius: 3
+      },
+      {
+        label: 'Turnover (%)',
+        data: trilhaData.map(d => d.turnover),
+        backgroundColor: trilhaData.map(d => d.turnover >= 40 ? '#B91C1C55' : '#1D4ED855'),
+        borderColor: trilhaData.map(d => d.turnover >= 40 ? '#B91C1C' : '#1D4ED8'),
+        borderWidth: 2, borderRadius: 3
+      }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'top', labels: { font: { size: 11 }, boxWidth: 12 } },
+      tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.raw.toFixed(1)}%` } }
+    },
+    scales: {
+      x: { grid: { display: false }, ticks: { color: textC, font: { size: 11 } } },
+      y: { grid: { color: gridC }, ticks: { color: textC, callback: v => v + '%' }, max: 80 }
+    }
+  }
+});
+</script>
 
 <script>
 const gridColor = 'rgba(0,0,0,0.06)';
@@ -635,5 +762,226 @@ new Chart(document.getElementById('c6'), {
   }
 });
 </script>
+
+  <!-- SEÇÃO 6: ABA TRATADO — OUTROS + COMENTÁRIOS SALARIAIS -->
+  <div class="section-label" style="margin-top:2.5rem">6 · Análise aprofundada — aba TRATADO</div>
+
+  <div class="chart-card">
+    <h3>Motivo "OUTROS" — o que os colaboradores descreveram</h3>
+    <p class="chart-subtitle">77 registros com motivo "OUTROS" — 64 forneceram descrição (83,1%) · 13 deixaram em branco</p>
+    <div class="two-col" style="margin-bottom:1rem">
+      <div>
+        <div class="legend"><span><span class="legend-box" style="background:#1D4ED8"></span>Categorias identificadas nas descrições</span></div>
+        <div style="position:relative;height:260px"><canvas id="c_outros" role="img" aria-label="Categorias dos motivos OUTROS">Dados de categorias OUTROS.</canvas></div>
+      </div>
+      <div>
+        <div class="legend"><span><span class="legend-box" style="background:#1D4ED8"></span>Proporção das categorias</span></div>
+        <div style="position:relative;height:260px"><canvas id="c_outros_donut" role="img" aria-label="Proporção das categorias OUTROS">Distribuição proporcional.</canvas></div>
+      </div>
+    </div>
+    <p class="chart-note">⚠️ 23 respostas (35,9%) ainda são vagas — "motivos pessoais", "desmotivação" etc. Considere perguntas mais guiadas. Novo emprego/proposta melhor é o principal motivo concreto (12), seguido de desligamentos pela empresa não informados como tal (11).</p>
+  </div>
+
+  <div class="chart-card">
+    <h3>Descrições abertas — campo "OUTROS" (seleção representativa)</h3>
+    <p class="chart-subtitle">Exemplos reais das descrições fornecidas pelos colaboradores que marcaram "OUTROS" como motivo</p>
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead>
+          <tr style="background:var(--surface2);text-align:left">
+            <th style="padding:8px 10px;color:var(--text-muted);font-weight:500;white-space:nowrap;border-bottom:1px solid var(--border)">Mês</th>
+            <th style="padding:8px 10px;color:var(--text-muted);font-weight:500;white-space:nowrap;border-bottom:1px solid var(--border)">Região</th>
+            <th style="padding:8px 10px;color:var(--text-muted);font-weight:500;white-space:nowrap;border-bottom:1px solid var(--border)">Categoria identificada</th>
+            <th style="padding:8px 10px;color:var(--text-muted);font-weight:500;border-bottom:1px solid var(--border)">Descrição do colaborador</th>
+          </tr>
+        </thead>
+        <tbody id="outros-tbody"></tbody>
+      </table>
+    </div>
+    <p class="chart-note">Total de 64 descrições coletadas. A tabela exibe casos representativos por categoria.</p>
+  </div>
+
+  <div class="chart-card">
+    <h3>Palavras-chave salariais nos Comentários Gerais</h3>
+    <p class="chart-subtitle">Quantas vezes termos como SALARIAL, SALÁRIO, REMUNERAÇÃO, POLÍTICAS e COMISSÃO aparecem nos comentários livres</p>
+    <div class="two-col">
+      <div>
+        <div class="legend">
+          <span><span class="legend-box" style="background:#EF4444"></span>Registros únicos</span>
+          <span><span class="legend-box" style="background:#1D4ED8"></span>Total ocorrências</span>
+        </div>
+        <div style="position:relative;height:220px"><canvas id="c_kw" role="img" aria-label="Contagem de palavras-chave salariais">Remuneração 14, Salário 8, Salarial 7.</canvas></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;justify-content:center">
+        <div style="background:var(--surface2);border-radius:8px;padding:1rem">
+          <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.04em">Registros únicos com ≥1 palavra-chave</div>
+          <div style="font-size:32px;font-weight:600;color:#B91C1C">25</div>
+          <div style="font-size:11px;color:var(--text-faint)">de 590 comentários analisados (4,2%)</div>
+        </div>
+        <div style="background:var(--surface2);border-radius:8px;padding:1rem">
+          <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.04em">Total de ocorrências somadas</div>
+          <div style="font-size:32px;font-weight:600;color:#B91C1C">35</div>
+          <div style="font-size:11px;color:var(--text-faint)">menções às 5 palavras-chave nos comentários</div>
+        </div>
+        <div style="background:#FEF3C7;border-radius:8px;padding:1rem;border:1px solid #F59E0B44">
+          <div style="font-size:12px;color:#92400E;line-height:1.5">⚠️ <strong>REMUNERAÇÃO</strong> é a palavra mais citada (14×), aparecendo até em comentários de quem saiu por outros motivos — indica que a insatisfação salarial vai além do motivo declarado.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chart-card">
+    <h3>Comentários que mencionam termos salariais — na íntegra</h3>
+    <p class="chart-subtitle">25 registros identificados com ao menos uma das palavras-chave: SALARIAL · SALÁRIO · REMUNERAÇÃO · POLÍTICAS · COMISSÃO</p>
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead>
+          <tr style="background:var(--surface2);text-align:left">
+            <th style="padding:8px 10px;color:var(--text-muted);font-weight:500;white-space:nowrap;border-bottom:1px solid var(--border)">Mês</th>
+            <th style="padding:8px 10px;color:var(--text-muted);font-weight:500;white-space:nowrap;border-bottom:1px solid var(--border)">Região</th>
+            <th style="padding:8px 10px;color:var(--text-muted);font-weight:500;white-space:nowrap;border-bottom:1px solid var(--border)">Motivo declarado</th>
+            <th style="padding:8px 10px;color:var(--text-muted);font-weight:500;white-space:nowrap;border-bottom:1px solid var(--border)">Palavras encontradas</th>
+            <th style="padding:8px 10px;color:var(--text-muted);font-weight:500;border-bottom:1px solid var(--border)">Comentário (trecho)</th>
+          </tr>
+        </thead>
+        <tbody id="kw-tbody"></tbody>
+      </table>
+    </div>
+    <p class="chart-note">Comentários truncados em 350 caracteres para legibilidade. Os trechos originais completos estão na planilha-base.</p>
+  </div>
+
+<script id="s6">
+const gridColor2 = 'rgba(0,0,0,0.06)';
+const textColor2 = '#6B6860';
+
+new Chart(document.getElementById('c_outros'), {
+  type: 'bar',
+  data: {
+    labels: ['Nao especificado','Novo emprego/proposta','Empresa desligou','Conflito c/ gestao','Motivos pessoais/saude','Falta crescimento'],
+    datasets: [{ label: 'Registros', data: [23,12,11,9,5,4],
+      backgroundColor: ['#B4B2A9','#1D4ED8','#EF4444','#F59E0B','#16A34A','#7C3AED'],
+      borderWidth:0, borderRadius:3 }]
+  },
+  options: { indexAxis:'y', responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false} },
+    scales:{ x:{grid:{color:gridColor2},ticks:{color:textColor2,font:{size:11}}},
+             y:{grid:{display:false},ticks:{color:textColor2,font:{size:11}},autoSkip:false} } }
+});
+
+new Chart(document.getElementById('c_outros_donut'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Nao especificado','Novo emprego/proposta','Empresa desligou','Conflito c/ gestao','Motivos pessoais','Falta crescimento'],
+    datasets: [{ data: [23,12,11,9,5,4],
+      backgroundColor:['#B4B2A9','#1D4ED8','#EF4444','#F59E0B','#16A34A','#7C3AED'],
+      borderWidth:0 }]
+  },
+  options: { responsive:true, maintainAspectRatio:false, cutout:'60%',
+    plugins:{ legend:{ position:'bottom', labels:{font:{size:10}, boxWidth:10} } } }
+});
+
+new Chart(document.getElementById('c_kw'), {
+  type: 'bar',
+  data: {
+    labels: ['REMUNERACAO','SALARIO','SALARIAL','COMISSAO','POLITICAS'],
+    datasets: [
+      { label:'Registros unicos', data:[14,8,7,2,1], backgroundColor:'#EF4444', borderWidth:0, borderRadius:3 },
+      { label:'Total ocorrencias', data:[14,9,9,2,1], backgroundColor:'#1D4ED8', borderWidth:0, borderRadius:3 }
+    ]
+  },
+  options: { responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{ position:'top', labels:{font:{size:11}, boxWidth:10} } },
+    scales:{ x:{grid:{display:false},ticks:{color:textColor2}},
+             y:{grid:{color:gridColor2},ticks:{color:textColor2}} } }
+});
+
+const outrosData = [
+  {mes:"JANEIRO",regiao:"Ctba 1",cat:"Novo Emprego / Proposta Melhor",desc:"Gostaria de poder voltar com uma remuneracao melhor, um cargo que me sentisse mais importante, reconhecida igual aos vendedores"},
+  {mes:"JANEIRO",regiao:"SC",cat:"Outros / Nao Especificado",desc:"Empresa nao oferece aquilo que promete na entrevista. Nao ha cultura de integridade! A empresa precisa aplicar mais os tecnicos de seguranca."},
+  {mes:"FEVEREIRO",regiao:"CDAM",cat:"Desligamento pela Empresa",desc:"Apos transferencia de filial 156 (fechou) para 126 fui colocado como em periodo de experiencia, por solicitacao do RH mediante 5 faltas seria feito desligamento"},
+  {mes:"FEVEREIRO",regiao:"SC",cat:"Problemas com Gestao",desc:"Sinceramente nao sei o que aconteceu, mas o gerente foi bem imaturo em nao ter conversado comigo antes, literalmente nao falou nada sobre o motivo"},
+  {mes:"MARCO",regiao:"CG",cat:"Falta de Crescimento / Reconhecimento",desc:"Perdi as expectativas de crescimento profissional com a vinda de outros gestores acima de mim"},
+  {mes:"MARCO",regiao:"SC",cat:"Problemas com Gestao",desc:"Houve recorrentes desvios de funcao, postura arrogante e dificuldade da gerencia em lidar com conflitos de forma respeitosa e profissional"},
+  {mes:"MARCO",regiao:"Sudoeste",cat:"Desligamento pela Empresa",desc:"Fui descartada"},
+  {mes:"ABRIL",regiao:"CG",cat:"Novo Emprego / Proposta Melhor",desc:"Convocada para Concurso Publico"},
+  {mes:"ABRIL",regiao:"Norte 2",cat:"Motivos Pessoais / Saude",desc:"Motivos de saude mental — ansiedade e depressao adquiridas/agravadas por fatores de carga horaria e excesso de trabalho"},
+  {mes:"ABRIL",regiao:"SC",cat:"Desligamento pela Empresa",desc:"Gerente justificou que precisava de funcionario homem para cobrir ferias. Como eu completava 90 dias ja poderia ser dispensada sem multa para a empresa"},
+  {mes:"MAIO",regiao:"Sul",cat:"Novo Emprego / Proposta Melhor",desc:"Recebi uma oferta de emprego com carga horaria bem menor e recebendo mais"},
+  {mes:"MAIO",regiao:"CDAM",cat:"Outros / Nao Especificado",desc:"Mudanca do setor de marketing para a Ole"},
+  {mes:"MAIO",regiao:"CG",cat:"Falta de Crescimento / Reconhecimento",desc:"Queria passar para o cargo assistente de loja mas o gerente nao quis me tirar do estoque"},
+  {mes:"MAIO",regiao:"Norte 2",cat:"Desligamento pela Empresa",desc:"Fui chamado para servir o exercito, terei que estar na organizacao militar durante 1 ano"}
+];
+
+const catColors = {
+  'Nao especificado':'#B4B2A9','Outros / Nao Especificado':'#B4B2A9',
+  'Novo Emprego / Proposta Melhor':'#1D4ED8','Novo emprego/proposta':'#1D4ED8',
+  'Desligamento pela Empresa':'#EF4444',
+  'Problemas com Gestao':'#F59E0B','Conflito c/ gestao':'#F59E0B',
+  'Motivos Pessoais / Saude':'#16A34A','Motivos pessoais':'#16A34A',
+  'Falta de Crescimento / Reconhecimento':'#7C3AED','Falta crescimento':'#7C3AED'
+};
+
+const outrosTbody = document.getElementById('outros-tbody');
+outrosData.forEach((r, i) => {
+  const tr = document.createElement('tr');
+  tr.style.borderBottom = '1px solid var(--border)';
+  tr.style.background = i % 2 === 0 ? 'transparent' : 'var(--surface2)';
+  const cc = catColors[r.cat] || '#B4B2A9';
+  tr.innerHTML =
+    '<td style="padding:8px 10px;color:var(--text-muted);white-space:nowrap">'+r.mes+'</td>'+
+    '<td style="padding:8px 10px;color:var(--text-muted);white-space:nowrap">'+r.regiao+'</td>'+
+    '<td style="padding:8px 10px;white-space:nowrap">'+
+      '<span style="display:inline-flex;align-items:center;gap:5px">'+
+        '<span style="width:8px;height:8px;border-radius:50%;background:'+cc+';flex-shrink:0"></span>'+
+        '<span style="font-size:11px;color:var(--text)">'+r.cat+'</span>'+
+      '</span>'+
+    '</td>'+
+    '<td style="padding:8px 10px;color:var(--text);line-height:1.45;max-width:420px">'+r.desc+'</td>';
+  outrosTbody.appendChild(tr);
+});
+
+const kwData = [
+  {mes:"JANEIRO",regiao:"SC",mot:"REM. / POL. SALARIAL",kw:["SALARIAL","REMUNERACAO"],com:"No caso salarial e condizente com a funcao, porem a meta e extrapolada e para novos colaboradores nao e passado nada de treinamento por parte da gestao, falta gestao de pessoas."},
+  {mes:"JANEIRO",regiao:"Ctba 1",mot:"REM. / POL. SALARIAL",kw:["COMISSAO","REMUNERACAO"],com:"Caso a Empresa Repense e Oferte Condicoes de Remuneracao Melhores, lembrando que as condicoes foram alteradas no inicio deste Ano, reduzindo a possibilidade de se obter um Comissionamento mais Atrativo e Condizente a Funcao de Vendedor."},
+  {mes:"JANEIRO",regiao:"Ctba 1",mot:"OUTROS",kw:["REMUNERACAO"],com:"Gostaria de poder voltar com uma remuneracao melhor, um cargo que me sentisse mais importante, que fosse reconhecida igual aos vendedores, mas sobre a empresa nao tenho o que reclamar."},
+  {mes:"MARCO",regiao:"SC",mot:"REM. / POL. SALARIAL",kw:["SALARIAL","REMUNERACAO"],com:"Loja muito otima para trabalhar, devido as mudancas de remuneracao salarial, sendo pago um salario muito abaixo da media de um vendedor."},
+  {mes:"MARCO",regiao:"Sudoeste",mot:"REM. / POL. SALARIAL",kw:["REMUNERACAO","COMISSAO"],com:"O principal motivo foi a troca da forma de remuneracao, alem do fato de como vendedor termos que fazer diversas funcoes alem da venda, porem recebendo apenas pela venda."},
+  {mes:"MARCO",regiao:"Norte 2",mot:"REM. / POL. SALARIAL",kw:["REMUNERACAO"],com:"Muda a remuneracao toda hora sem beneficio para o funcionario."},
+  {mes:"MARCO",regiao:"Ctba 1",mot:"REM. / POL. SALARIAL",kw:["SALARIO","REMUNERACAO"],com:"Ter um salario de R$1.500 estando dentro da loja da abertura ate o fechamento e vergonhoso. Cheguei la, se nao batesse 130k nao ganharia alem do fixo. Sazo do meu trabalho para realizar um sonho e minha decepção foi gigante."},
+  {mes:"MARCO",regiao:"Ctba 2",mot:"REM. / POL. SALARIAL",kw:["REMUNERACAO","POLITICAS"],com:"Pedi demissao por dois motivos: gestao do gestor imediato e remuneracao. Apos janeiro a nova politica salarial infelizmente nao deu pra mim."},
+  {mes:"MARCO",regiao:"Norte 1",mot:"REM. / POL. SALARIAL",kw:["REMUNERACAO"],com:"Essa nova forma de remuneracao prejudicou muito os colaboradores, desmotivando a exercer sua funcao com excelencia. Alem disso, a falta de comunicacao assertiva tornou os dias mais estressantes."},
+  {mes:"ABRIL",regiao:"Ctba 2",mot:"REM. / POL. SALARIAL",kw:["SALARIAL","REMUNERACAO"],com:"Questao de remuneracao: precisaria ter uma politica salarial definitiva. Nossos compromissos financeiros foram assumidos com base no ganho anterior. Da forma que foi feito nao pudemos honra-los."},
+  {mes:"ABRIL",regiao:"Ctba 2",mot:"REM. / POL. SALARIAL",kw:["REMUNERACAO","SALARIO"],com:"A empresa MM foi uma oportunidade maravilhosa, porem nos ultimos meses deixou a desejar quando mudou o quadro de remuneracao de salario, afetando muitos colaboradores."},
+  {mes:"ABRIL",regiao:"Sul",mot:"REM. / POL. SALARIAL",kw:["REMUNERACAO"],com:"Agradeco a oportunidade, tive aprendizados com os colegas, porem preciso de uma melhor remuneracao para conseguir sobreviver e melhorar minha condicao profissional."},
+  {mes:"ABRIL",regiao:"Norte 1",mot:"REM. / POL. SALARIAL",kw:["SALARIAL","POLITICAS"],com:"Meu pedido de demissao se da pela mudanca/retirada das politicas salariais de Excelencia e pela falta de transparencia na tomada de decisao da empresa."},
+  {mes:"MAIO",regiao:"Norte 1",mot:"REM. / POL. SALARIAL",kw:["REMUNERACAO"],com:"Nao voltaria pois a politica de remuneracao atual e totalmente fora da realidade atual de mercado."},
+  {mes:"MAIO",regiao:"Norte 2",mot:"BENEFICIOS",kw:["SALARIO"],com:"No contracheque do primeiro mes meu salario era 1030, no contrato era 1060. Nao recebi vale transporte e custeei as passagens do meu bolso, as vezes ultrapassando R$30 em UM dia."},
+  {mes:"MAIO",regiao:"CDAM",mot:"REM. / POL. SALARIAL",kw:["REMUNERACAO"],com:"Fui muito bem tratado mas preferi optar por empresa em que a remuneracao e maior e tem beneficios, coisa que a MM nao oferece."},
+  {mes:"MAIO",regiao:"MS 1",mot:"REM. / POL. SALARIAL",kw:["SALARIAL"],com:"A empresa e muito boa, tenho certeza que ira melhorar futuramente. A variante salarial e com certeza um empeciho muito grande no momento, mas tenho certeza que sera corrigida."},
+  {mes:"MAIO",regiao:"CDAM",mot:"TRANSICAO CARREIRA",kw:["SALARIO"],com:"Terem mais cuidado com a saude mental de seus funcionarios, e salarios poderiam sempre ser revistos pois as vezes o trabalho aumenta em quase 5x mais e o salario continua o mesmo, o que desmotiva."},
+  {mes:"MAIO",regiao:"Norte 2",mot:"NAO INFORMADO",kw:["SALARIO"],com:"Reclamei de mais sobre o salario."},
+  {mes:"MAIO",regiao:"Sudoeste",mot:"REM. / POL. SALARIAL",kw:["SALARIO","REMUNERACAO","COMISSAO"],com:"Fiquei por quase 6 anos. A padronizacao salarial que a empresa acredita ser correta nao se torna tao correta. Perdem otimos profissionais. Falta para pagar contas basicas — as comissoes e campanhas nao cobrem todos os perfis de colaborador."}
+];
+
+const kwTbody = document.getElementById('kw-tbody');
+const kwColors = {'SALARIAL':'#EF4444','SALARIO':'#F59E0B','REMUNERACAO':'#B91C1C','POLITICAS':'#7C3AED','COMISSAO':'#1D4ED8'};
+kwData.forEach((r, i) => {
+  const tr = document.createElement('tr');
+  tr.style.borderBottom = '1px solid var(--border)';
+  tr.style.background = i % 2 === 0 ? 'transparent' : 'var(--surface2)';
+  const badges = r.kw.map(k => {
+    const c = kwColors[k] || '#666';
+    return '<span style="display:inline-block;background:'+c+'22;color:'+c+';border:1px solid '+c+'55;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:600;margin:1px">'+k+'</span>';
+  }).join(' ');
+  tr.innerHTML =
+    '<td style="padding:8px 10px;color:var(--text-muted);white-space:nowrap">'+r.mes+'</td>'+
+    '<td style="padding:8px 10px;color:var(--text-muted);white-space:nowrap">'+r.regiao+'</td>'+
+    '<td style="padding:8px 10px;white-space:nowrap;font-size:11px;color:var(--text)">'+r.mot+'</td>'+
+    '<td style="padding:8px 10px">'+badges+'</td>'+
+    '<td style="padding:8px 10px;color:var(--text);line-height:1.45;max-width:360px;font-size:11.5px">'+r.com+'</td>';
+  kwTbody.appendChild(tr);
+});
+</script>
+
 </body>
 </html>
